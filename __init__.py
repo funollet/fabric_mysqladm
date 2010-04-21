@@ -131,16 +131,6 @@ Parameters:
 
 
 
-def grant_and_show(local_user, mysql_db, mysql_user, mysql_client, 
-    mysql_password):
-    """Shorthand: grant +  set_passwd + make_cnf.
-    """
-    grant(mysql_db, mysql_user, mysql_client)
-    set_password(mysql_user, mysql_client, mysql_password)
-    make_cnf(local_user, mysql_user, mysql_client, mysql_password)
-
-
-
 def new_db (mysql_db, local_user, mysql_client=None):
     """New Mysql DB with a new user/password.
 
