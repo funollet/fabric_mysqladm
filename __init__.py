@@ -5,7 +5,7 @@ from fabric.contrib.files import *
 
 
 # Default permissions for grant().
-env.mysql_perms = """SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX,
+env.mysqladm_perms = """SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX,
     ALTER, CREATE TEMPORARY TABLES, LOCK TABLES"""
 
 
@@ -61,12 +61,12 @@ Parameters:
     [mysql_client]: [localhost] allow connections from this host
     
 Requires:
-    mysql_perms
+    mysqladm_perms
     """
     
-    require('mysql_perms')
+    require('mysqladm_perms')
     cmd = """mysql -e "GRANT %s ON %s.* TO '%s'@'%s' ;" """
-    run(cmd % (env.mysql_perms, mysql_db, mysql_user, mysql_client))
+    run(cmd % (env.mysqladm_perms, mysql_db, mysql_user, mysql_client))
 
 
 #TODO: validate username < 16 chars, no underscores
