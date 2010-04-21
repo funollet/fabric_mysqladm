@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# fabmodules/mysql.py
 
 from fabric.api import *
 from fabric.contrib.files import *
 
 
-# Default permissions for mysql_grant().
+# Default permissions for grant().
 env.mysql_perms = """SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX,
     ALTER, CREATE TEMPORARY TABLES, LOCK TABLES"""
 
@@ -29,7 +28,7 @@ def __generate_password (length=8):
 
 
 
-def mysql_create_db (mysql_db):
+def create_db (mysql_db):
     """Create a Mysql db on the remote host.
     
     mysql_db:     name of the db
@@ -37,7 +36,7 @@ def mysql_create_db (mysql_db):
     run('mysqladmin create %s' % mysql_db)
 
 
-def mysql_drop_db (mysql_db):
+def drop_db (mysql_db):
     """Drop a Mysql db on the remote host.
 
     mysql_db:     name of the db
@@ -45,7 +44,7 @@ def mysql_drop_db (mysql_db):
     run('mysqladmin -f drop %s' % mysql_db)
 
 
-def mysql_drop_user (mysql_user):
+def drop_user (mysql_user):
     """Drop a Mysql user on the remote host.
 
     mysql_user:     name of the user
@@ -53,7 +52,7 @@ def mysql_drop_user (mysql_user):
     run("""mysql -e "DROP USER %s ;" """ % mysql_user)
 
 
-def mysql_grant (mysql_db, mysql_user, mysql_client='localhost'):
+def grant (mysql_db, mysql_user, mysql_client='localhost'):
     """Grant Mysql permissions on the remote host.
 
 Parameters:
@@ -71,7 +70,7 @@ Requires:
 
 
 #TODO: validate username < 16 chars, no underscores
-def mysql_set_password (mysql_user, mysql_password, mysql_client='localhost'):
+def set_password (mysql_user, mysql_password, mysql_client='localhost'):
     """Set new password for a Mysql user.
 
 Parameters:
@@ -84,18 +83,18 @@ Parameters:
     run(cmd % (mysql_user, mysql_client, mysql_password))
 
 
-def mysql_copy_db (src, dest):
+def copy_db (src, dest):
     """Copy a Mysql db into a new one (same server).
 
 Parameters:
     src:  name of original DB
     dest: name of destiation DB
     """
-    mysql_create_db(dest)
+    create_db(dest)
     run('mysqldump %s | mysql %s' % (src, dest))
 
 
-def mysql_migrate_db (mysql_db, dest_host, ssh_key='migrakey'):
+def migrate_db (mysql_db, dest_host, ssh_key='migrakey'):
     """Copy a DB into another Mysql server with an SSH-tunnel.
 
 Parameters:
@@ -108,7 +107,7 @@ Parameters:
 
 
 
-def mysql_make_cnf(cnf_fname, mysql_user, mysql_server, mysql_password):
+def make_cnf(cnf_fname, mysql_user, mysql_server, mysql_password):
     """Generate a Mysql .cnf file.
 
 Parameters:
@@ -132,13 +131,13 @@ Parameters:
 
 
 
-def mysql_grant_and_show(local_user, mysql_db, mysql_user, mysql_client, 
+def grant_and_show(local_user, mysql_db, mysql_user, mysql_client, 
     mysql_password):
-    """Shorthand: mysql_grant +  mysql_set_passwd + mysql_make_cnf.
+    """Shorthand: grant +  set_passwd + make_cnf.
     """
-    mysql_grant(mysql_db, mysql_user, mysql_client)
-    mysql_set_password(mysql_user, mysql_client, mysql_password)
-    mysql_make_cnf(local_user, mysql_user, mysql_client, mysql_password)
+    grant(mysql_db, mysql_user, mysql_client)
+    set_password(mysql_user, mysql_client, mysql_password)
+    make_cnf(local_user, mysql_user, mysql_client, mysql_password)
 
 
 
@@ -173,13 +172,13 @@ Put .my.cnf on <mysql_client>, at ~/.my.cnf.<mysql_db>
     cnf_fname = '/home/%s/.my.cnf.%s' % (local_user, mysql_db)
 
 
-    mysql_create_db(mysql_db)
-    mysql_grant(mysql_db, mysql_user, connect_from)
-    mysql_set_password(mysql_user, mysql_password, connect_from)
+    create_db(mysql_db)
+    grant(mysql_db, mysql_user, connect_from)
+    set_password(mysql_user, mysql_password, connect_from)
 
     # Hack to change the host where next task is run (Fabric-0.9).
     env.user, env.port, env.host = ('root', '22', fqdn_client)
     env.host_string = '%(user)s@%(host)s:%(port)s' % env
 
-    mysql_make_cnf(cnf_fname, mysql_user, mysql_server, mysql_password)
+    make_cnf(cnf_fname, mysql_user, mysql_server, mysql_password)
 
